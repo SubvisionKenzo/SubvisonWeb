@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Subvision Audio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="container">
+        <h1>Subvision Audio Editor</h1>
+
+        <div id="editor">
+            <canvas id="waveform"></canvas>
+            <div id="playhead"></div>
+        </div>
+
+        <div id="timeline">
+            <div id="controls">
+                <button id="playBtn">Play</button>
+                <button id="pauseBtn">Pause</button>
+                <button id="resetBtn">Reset</button>
+                <button id="deleteBtn">Delete</button>
+                <div id="chrono">00:00.000</div>
+            </div>
+            <div id="mediaInput">
+                <input type="text" id="mediaName" class="import-btn" placeholder="Nom du bloc">
+                <button id="addMedia" class="import-btn">Ajouter le bloc</button>
+                <label for="audioUpload" class="import-btn">Importer une musique</label>
+                <input type="file" id="audioUpload" accept="audio/*" style="display:none">
+            </div>
+
+            <div id="timelineTrack"></div>
+        </div>
+    </div>
+
+    <div id="editModal">
+        <h3>Modifier le bloc</h3>
+        <input type="text" id="editName" placeholder="Nom">
+        <input type="number" id="editDuration" placeholder="Durée (sec)">
+        <input type="file" id="editAudio" accept="audio/*">
+        <button id="saveEdit">✅ Sauvegarder</button>
+    </div>
+</div>
+
+    <script src="editor.js"></script>
+</body>
+</html>
