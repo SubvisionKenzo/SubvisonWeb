@@ -1,0 +1,1387 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>SubvisionKenzo</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="SubvisionWeb software et projet">
+    <link rel="icon" href="IMG/Logo.ico" type="image/x-icon">
+</head>
+<body>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            text-decoration: none;
+            list-style: none;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #222;
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+            background: url(IMG/Background.jpg) no-repeat;
+            color: #ffffff;
+        }
+
+        /* Hamburger */
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            cursor: pointer;
+            width: 40px;
+            height: 30px;
+        }
+
+            .hamburger span {
+                display: block;
+                height: 5px;
+                background: #00ffff;
+                margin: 6px 0;
+                border-radius: 3px;
+                box-shadow: 0 0 10px #00ffff;
+                transition: 0.3s;
+            }
+
+        /* Menu */
+        .menu {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #111;
+            box-shadow: 0 0 20px #00ffff;
+            transition: left 0.3s ease;
+            padding-top: 80px;
+            z-index: 999;
+        }
+
+            .menu.open {
+                left: 0;
+            }
+
+            .menu a {
+                display: block;
+                padding: 15px 20px;
+                color: #00ffff;
+                text-decoration: none;
+                font-size: 18px;
+                border-bottom: 1px solid #222;
+                cursor: pointer;
+            }
+
+                .menu a:hover {
+                    background-color: #222;
+                }
+
+        /* Overlay Vitrine */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 90%;
+            max-width: 1000px;
+            overflow: hidden;
+            padding: 40px 0;
+        }
+
+        .carousel {
+            display: flex;
+            transition: transform 0.5s ease;
+            gap: 20px;
+            padding: 0 40px;
+        }
+
+        .card {
+            min-width: 250px;
+            background-color: #111;
+            border-radius: 10px;
+            box-shadow: 0 0 15px #00ffff;
+            padding: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+            .card h3 {
+                color: #00ffff;
+                margin-bottom: 10px;
+            }
+
+            .card p {
+                font-size: 14px;
+                color: #ccc;
+            }
+
+            .card button {
+                margin-top: 10px;
+                background-color: #00ffff;
+                color: #000;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 5px;
+                cursor: pointer;
+                box-shadow: 0 0 10px #00ffff;
+            }
+
+        .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: #00ffff;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+            .arrow.left {
+                left: 10px;
+            }
+
+            .arrow.right {
+                right: 10px;
+            }
+
+        .close-btn {
+            margin-top: 20px;
+            background-color: #ff0055;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 0 10px #ff0055;
+        }
+
+        nav {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, .2);
+            backdrop-filter: blur(20px);
+            height: 80px;
+            width: 100%;
+        }
+
+        label.logo {
+            color: white;
+            font-size: 55px;
+            line-height: 65px;
+            height: 50px;
+            padding: 0 10%;
+            font-weight: bold;
+            top: 25px;
+        }
+
+        nav ul {
+            float: right;
+            margin-right: 20px;
+        }
+
+            nav ul li {
+                display: inline-block;
+                line-height: 80px;
+                margin: 0 5px;
+            }
+
+                nav ul li a {
+                    color: white;
+                    font-size: 17px;
+                    text-transform: uppercase;
+                }
+
+        .login-btn {
+            padding: 12px 24px;
+            background-color: #6f00ff;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+            .login-btn:hover {
+                background-color: #9a4dff;
+            }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .modal-content {
+            background-color: #222;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 475px;
+            box-shadow: 0 0 20px #6f00ff;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+            color: #f30505;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .submit-btn {
+            background-color: #6f00ff;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            .submit-btn:hover {
+                background-color: #9a4dff;
+            }
+
+        .login {
+            width: 130px;
+            height: 50px;
+            background: transparent;
+            border: 2px solid #fff;
+            outline: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            color: #fff;
+            font-weight: 500;
+            margin-left: 30px;
+            transition: .5s;
+        }
+
+            .login:hover {
+                background: #fff;
+                color: #162938;
+            }
+
+        .container {
+            position: relative;
+            width: 400px;
+            height: 500px;
+            background: #1c1c1c;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+            .container::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 380px;
+                height: 420px;
+                background: linear-gradient(0deg,transparent, #2970EC, #2970EC);
+                transform-origin: bottom right;
+                animation: animate 7s linear infinite;
+            }
+
+            .container::after {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 380px;
+                height: 420px;
+                background: linear-gradient(0deg,transparent, #EC2929, #EC2929);
+                transform-origin: bottom right;
+                animation: animate 7s linear infinite;
+                animation-delay: 3s;
+            }
+
+        @keyframes animate {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .form {
+            position: absolute;
+            inset: 3px;
+            border-radius: 8px;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, .2);
+            backdrop-filter: blur(20px);
+            z-index: 10;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .form h2 {
+                text-align: center;
+                letter-spacing: 0.1em;
+                color: #03fe78;
+            }
+
+        .inputBox {
+            position: relative;
+            width: 300px;
+            margin-top: 35px;
+        }
+
+            .inputBox input {
+                width: 100%;
+                padding: 20px 10px 10px;
+                background: transparent;
+                border-color: #03fe78;
+                border-top: none;
+                border-left: none;
+                border-right: none;
+                font-size: 1em;
+                color: #03fe78;
+            }
+
+        button[type="submit"] {
+            border: 1px solid #fff;
+            background: #03fe78;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 300px;
+            height: 50px;
+            border-radius: 12px;
+            border: none;
+            padding: 15px 40px;
+        }
+
+        .box {
+            position: relative;
+            display: flex;
+            content: "";
+            border-radius: 12px;
+            border: 1px solid #fff;
+            cursor: pointer;
+            padding: -20px 40px;
+            width: 280px;
+            margin-top: 10px;
+        }
+
+        .over {
+            position: relative;
+            display: flex;
+            margin-top: -15px;
+            padding: 15px 0px;
+            width: 300px;
+            color: #03fe78;
+        }
+
+        .call {
+            content: "";
+            color: #0331fe;
+            text-shadow: #1c1c1c;
+            text-decoration: double;
+            text-decoration-line: none;
+        }
+
+        nav button {
+            background: none;
+            border: 2px solid #0ff;
+            color: #0ff;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-shadow: 0 0 5px #0ff;
+            box-shadow: 0 0 10px #0ff;
+        }
+
+        #editorContainer {
+            display: none;
+            padding: 20px;
+        }
+
+        #editor {
+            width: 100%;
+            height: 300px;
+            background-color: #111;
+            color: #fff;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px #0ff inset;
+            padding: 10px;
+            font-size: 16px;
+            white-space: pre;
+            overflow: auto;
+        }
+
+        .syntax-html {
+            color: #ff00ff;
+        }
+
+        .syntax-tag {
+            color: #00ffff;
+        }
+
+        .syntax-attr {
+            color: #ffff00;
+        }
+
+        .syntax-string {
+            color: #ff8800;
+        }
+
+        .btn-action {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #0ff;
+            color: #000;
+            border: none;
+            font-weight: bold;
+            box-shadow: 0 0 10px #0ff;
+            cursor: pointer;
+        }
+
+        .item {
+            background-color: #111;
+            color: #0ff;
+            padding: 15px;
+            margin: 10px auto;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #0ff;
+            display: none;
+        }
+
+            .item:hover {
+                background-color: #222;
+            }
+
+        .sherch {
+            padding: 5px 25px;
+            outline: none;
+            box-sizing: border-box;
+            background: transparent;
+            border-radius: 10px;
+            background-color: #fcfcfc;
+            line-height: 15px;
+            font-weight: bold;
+            position: absolute;
+            top: 25px;
+            right: 230px;
+        }
+
+        .neonbutton {
+            padding: 5px 20px;
+            border: none;
+            outline: none;
+            color: #FFF;
+            cursor: pointer;
+            position: relative;
+            z-index: 0;
+            border-radius: 12px;
+        }
+
+            .neonbutton::after {
+                content: "";
+                z-index: -1;
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background-color: #242424;
+                left: 0;
+                top: 0;
+                border-radius: 10px;
+            }
+
+            .neonbutton::before {
+                content: "";
+                background: linear-gradient(45deg, #FF0000, #FF7300, #FFFB00, #11ff00, #00ffee, #2239fa, #8c00ff, #ff0095);
+                position: absolute;
+                top: -2px;
+                left: -2px;
+                background-size: 600%;
+                z-index: -1;
+                width: calc(100% + 4px);
+                height: calc(100% + 4px);
+                filter: blur(8px);
+                animation: glowing 20s linear infinite;
+                transition: opacity .3s ease-in-out;
+                border-radius: 10px;
+                opacity: 0;
+            }
+
+            .neonbutton:hover::before {
+                opacity: 1;
+            }
+
+            .neonbutton:active:after {
+                background: transparent;
+            }
+
+            .neonbutton:active {
+                color: #000;
+                font-weight: bold;
+            }
+
+        @keyframes glowing {
+            0% {
+                background-position: 0 0;
+            }
+
+            50% {
+                background-position: 400% 0;
+            }
+
+            100% {
+                background-position: 0 0;
+            }
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png');
+            animation: scrollBg 30s linear infinite;
+            opacity: 0.05;
+        }
+
+        @keyframes scrollBg {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: -1000px 1000px;
+            }
+        }
+
+        .title {
+            text-align: center;
+            font-size: 3em;
+            margin-top: 100px;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        .scrolling-text {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+            .scrolling-text span {
+                display: inline-block;
+                padding-left: 100%;
+                animation: scrollText 20s linear infinite;
+            }
+
+        @keyframes scrollText {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
+        .Containerbox {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px;
+            width: 1100px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+            .Containerbox .box {
+                border: 2px solid rgba(255, 255, 255, .2);
+                background: transparent;
+                backdrop-filter: blur(20px);
+                border-radius: 15px;
+                position: relative;
+                width: 320px;
+                padding: 100px 40px 60px;
+                box-shadow: 0 15px 45px rgba(0,0,0,.1);
+            }
+
+                .Containerbox .box:before {
+                    border-radius: 15px;
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: #0a2991;
+                    transform: scaleY(0);
+                    transform-origin: top;
+                    transition: transform 0.5s;
+                }
+
+                .Containerbox .box:hover:before {
+                    border-radius: 15px;
+                    transform: scaleY(1);
+                    transform-origin: bottom;
+                    transition: transform 0.5s;
+                }
+
+                .Containerbox .box h2 {
+                    border-radius: 15px;
+                    position: absolute;
+                    left: 40px;
+                    top: 60px;
+                    font-size: 4em;
+                    font-weight: 800;
+                    z-index: 1;
+                    opacity: 0.5;
+                    transition: 0.5s;
+                }
+
+                .Containerbox .box:hover h2 {
+                    border-radius: 15px;
+                    opacity: 1;
+                    color: #fff;
+                    transform: translateY(-40px);
+                }
+
+                .Containerbox .box h3 {
+                    position: relative;
+                    font-size: 1.3em;
+                    z-index: 2;
+                    color: #818181;
+                    transition: 0.5s;
+                }
+
+                .Containerbox .box:hover h3 {
+                    color: #fff;
+                }
+
+                .Containerbox .box p:hover {
+                    color: #fff;
+                }
+
+                .Containerbox .box p {
+                    position: relative;
+                    z-index: 2;
+                    color: #555;
+                    transition: 0.7s;
+                }
+
+        .section-intro {
+            background: url('fond1.jpg') center/cove no-repeat fixed;
+            text-align: center;
+            padding: 80px 20px;
+            box-shadow: inset 0 0 100px #000;
+        }
+
+            .section-intro h1 {
+                font-size: 3em;
+                color: #00ffff;
+                text-shadow: 0 0 20px #00ffffaa;
+            }
+
+            .section-intro p {
+                font-size: 1.2em;
+                color: #ccc;
+                margin-top: 10px;
+            }
+
+        .section-carousel {
+            background: url('IMG\Background.jpg') center/cover no-repeat fixed;
+            padding: 60px 0;
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            position: absolute;
+            display: flex;
+            gap: 30px;
+            animation: scrollMods 20s linear infinite;
+        }
+
+        .mod-card {
+            flex: 0 0 220px;
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 0 15px #00ffff55;
+            transition: transform 0.3s ease;
+            animation: dropCycle 20s linear infinite;
+        }
+
+            .mod-card:hover {
+                transform: scale(1.05);
+                box-shadow: 0 0 25px #00ffffaa;
+            }
+
+            .mod-card img {
+                width: 100%;
+                border-radius: 8px;
+                margin-bottom: 10px;
+            }
+
+            .mod-card h3 {
+                margin: 0;
+                font-size: 1.2em;
+                color: #00ffff;
+            }
+
+            .mod-card p {
+                font-size: 0.9em;
+                color: #ccc;
+            }
+
+        @keyframes scrollMods {
+            0% {
+                left: 100%;
+            }
+
+            100% {
+                left: -100%;
+            }
+        }
+
+        @keyframes dropCycle {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            80% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            90% {
+                transform: translateY(100px);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+
+        .section-footer {
+            background: #111;
+            text-align: center;
+            padding: 40px 20px;
+            box-shadow: inset 0 0 60px #000;
+        }
+
+            .section-footer h2 {
+                color: #00ffff;
+                margin-bottom: 10px;
+            }
+
+            .section-footer p {
+                color: #aaa;
+                font-size: 0.95em;
+            }
+
+        .reseaux-footer {
+            background-color: #111;
+            padding: 25px 10px;
+            text-align: center;
+            box-shadow: inset 0 0 30px #00ffff55;
+        }
+
+            .reseaux-footer h3 {
+                color: #00ffff;
+                font-size: 1.3em;
+                margin-bottom: 15px;
+                font-family: 'Minecraft', sans-serif;
+                text-shadow: 0 0 8px #00ffff88;
+            }
+
+        .reseaux-icons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+            .reseaux-icons img {
+                width: 40px;
+                height: 40px;
+                transition: transform 0.3s ease, filter 0.3s ease;
+                filter: drop-shadow(0 0 5px #00ffffaa);
+            }
+
+                .reseaux-icons img:hover {
+                    transform: scale(1.2);
+                    filter: drop-shadow(0 0 10px #00ffff);
+                }
+
+        .section-info {
+            position: relative;
+            background: url("IMG/Background.jpg") no-repeat center center;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 60px 20px;
+            flex-wrap: wrap;
+            text-align: center;
+            overflow: hidden;
+        }
+
+            .section-info::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: rgba(255, 255, 255, 0.85); /* filtre blanc semi-transparent */
+                z-index: 0;
+            }
+
+        .section {
+            padding: 40px 20px;
+        }
+
+        .white {
+            background-color: #6ea2c4;
+        }
+
+        .blue {
+            background-color: #008affaa;
+        }
+
+        .blackgrey {
+            background-color: #111;
+        }
+
+        .invisible {
+            background-color: rgb(255, 255, 255, 0,00);
+        }
+
+        .iso-card {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+        }
+
+        .iso-cardinvisible {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgb(255, 255, 255, 0,00);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .iso-card h2 {
+            margin-top: 0;
+        }
+
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #0078d4;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+            .download-btn:hover {
+                background-color: #005a9e;
+            }
+
+        .textcolorblack {
+            color: #000;
+        }
+
+
+        .video-box {
+            position: relative;
+            width: 320px;
+            height: 205px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .custom-play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90px;
+            height: 90px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+            .custom-play-button img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                animation: cycleImages 3s infinite;
+            }
+
+        @keyframes cycleImages {
+            0% {
+                content: url('IMG\\foxbtn\\img1.png');
+            }
+
+            33% {
+                content: url('IMG\\foxbtn\\img2.png');
+            }
+
+            66% {
+                content: url('IMG\\foxbtn\\img3.png');
+            }
+
+            100% {
+                content: url('IMG\\foxbtn\\img1.png');
+            }
+        }
+
+        #searchBar {
+            width: 500px;
+            margin-left: 50px;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            animation: neonPulse 5s linear infinite;
+            transition: box-shadow 0.3s ease;
+        }
+
+        #carousel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .card {
+            width: 200px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+            }
+
+        .hidden {
+            display: none;
+        }
+
+        .searchBar::placeholder {
+            color: #aaa;
+            font-style: italic;
+        }
+
+        @keyframes neonPulse {
+            0% {
+                box-shadow: 0 0 10px #ff0000, 0 0 20px #ff9900, 0 0 30px #ffff00;
+            }
+
+            25% {
+                box-shadow: 0 0 10px #00ff00, 0 0 20px #00ffff, 0 0 30px #0000ff;
+            }
+
+            50% {
+                box-shadow: 0 0 10px #4b0082, 0 0 20px #8a2be2, 0 0 30px #ff00ff;
+            }
+
+            75% {
+                box-shadow: 0 0 10px #ff1493, 0 0 20px #ff4500, 0 0 30px #ffff00;
+            }
+
+            100% {
+                box-shadow: 0 0 10px #ff0000, 0 0 20px #ff9900, 0 0 30px #ffff00;
+            }
+        }
+    </style>
+
+    <header>
+        <nav>
+            <label class="logo">
+                <img src="IMG\Title.png" width="100">
+            </label>
+            <input class="sherch" id="searchInput" placeholder="Rechercher">
+            <ul>
+                <li><button class="login" onclick="openModal()">LOGIN</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="section-intro">
+        <h1>Bienvenue sur SubvisionKenzo (Beta)</h1>
+        <p>Nos recommendation !</p>
+    </section>
+
+    <section class="section-carousel">
+        <div class="carousel-track" id="carouselTrack">
+            <!-- Cartes ici -->
+        </div>
+    </section>
+
+    <section class="section-footer">
+        <h2>À propos</h2>
+        <p>Subvision est un projet passionné pour mettre en valeur les créations les Projet et protection. Rejoins-nous pour découvrir, partager et créer.</p>
+    </section>
+
+    <div class="background"></div>
+
+    <div class="title"></div>
+
+    <div class="scrolling-text">
+        <span></span>
+    </div>
+
+
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="container">
+                <div class="form">
+                    <h2>S'identifier</h2>
+                    <form action="https://discord.gg/J3z2djUaJ6" metthod="submit">
+                        <div class="inputBox">
+                            <input type="text" name="Nom d'Utilisateur" required placeholder="Name">
+                        </div>
+                        <div class="inputBox">
+                            <input type="email" name="Email" required placeholder="Email">
+                        </div>
+                        <div class="inputBox">
+                            <input type="text" name="Message" required placeholder="subject">
+                        </div>
+                        <div class="inputBox">
+                            <button type="submit">Terminer</button>
+                            <script>
+                                value = "inputBox"
+                                inputBox = "placeholder"
+                                Overme = "inputBox"
+                            </script>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Hamburger -->
+    <div class="hamburger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <!-- Menu -->
+    <div id="menu" class="menu">
+        <a href="#">Accueil</a>
+        <a href="#" onclick="openOverlay()">Logiciels</a>
+        <a href="#" onclick="window.open('IMG\\audio\\index.html')">Editeur audio</a>
+        <a href="#" onclick="openModal()">Connexion</a>
+    </div>
+
+    <!-- Overlay Vitrine -->
+    <div class="overlay" id="shopOverlay">
+        <div class="carousel-container">
+            <button class="arrow left" onclick="scrollCarousel(-1)">❮</button>
+            <div class="carousel" id="carousel">
+                <div class="card">
+                    <h3>Actualité</h3>
+                    <div class="video-box" style="width: 220px;">
+                        <video id="localVideo" src="IMG//get-start.mp4" preload="metadata"></video>
+                        <div class="custom-play-button" id="customPlay">
+                            <img src="img1.png" alt="Play">
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Batchscaner Antivirus</h3>
+                    <img href="" />
+                    <p>Antivirus portable et fonctionnel (SubvisionKenzo)</p>
+                    <button class="neonbutton" onclick="location.href='https://github.com/SubvisionKenzo/BatchscannerAntivirus'">Télécharger</button>
+                </div>
+                <div class="card">
+                    <h3>Virtual Box</h3>
+                    <img href="" />
+                    <p>Logiciel de virtualisation et de test</p>
+                    <button class="neonbutton" onclick="location.href='https://drive.google.com/file/d/16MyMZ9OwzNe6zhANtjntqA5JwlLD5ir7/view?usp=drive_link'">Télécharger</button>
+                </div>
+                <div class="card">
+                    <h3>OBS studio</h3>
+                    <img href="IMG\LINK\batch.png" />
+                    <p>Parfait pour stream et faire des video!</p>
+                    <button class="neonbutton" onclick="location.href='https://cdn-fastly.obsproject.com/downloads/OBS-Studio-32.0.1-Windows-x64-Installer.exe'">Télécharger</button>
+                </div>
+                <div class="card">
+                    <h3>FireFox</h3>
+                    <img href="IMG\LINK\exe.png" />
+                    <p>Navigateur internet fiable et securisé</p>
+                    <button class="neonbutton" onclick="location.href='https://www.firefox.com/en-US/thanks/'">Télécharger</button>
+                </div>
+                <div class="card">
+                    <h3>Visual Studio</h3>
+                    <img href="IMG\LINK\exe.png" />
+                    <p>IDE code plateforme et logiciel</p>
+                    <button class="neonbutton" onclick="location.href='https://visualstudio.microsoft.com/fr/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false'">Télécharger</button>
+                </div>
+                <div class="card">
+                    <h3>vlc-3.0.21-win64</h3>
+                    <img href="IMG\LINK\exe.png" />
+                    <p>Application audio pour pc</p>
+                    <button class="neonbutton" onclick="location.href='https://drive.google.com/file/d/1_y0kLQdLerTuTfWFIhwMfRcHxN6Ak78t/view?usp=sharing'">Télécharger</button>
+                </div>
+                <div class="card">
+                    <h3>rufus-v4.11</h3>
+                    <img href="IMG\LINK\exe.png" />
+                    <p>Application portable & creation de clé USB bootable</p>
+                    <button class="neonbutton" onclick="location.href='https://drive.google.com/file/d/19wQoN0OejzJnz2VbccIOaApYcgToyTY9/view?usp=sharing'">Télécharger</button>
+                </div>
+                <div class="card">
+                    <h3>ISODownloader</h3>
+                    <img href="IMG\LINK\exe.png" />
+                    <p>Télechargement d'ISO & USB</p>
+                    <button class="neonbutton" onclick="location.href='https://github.com/SubvisionKenzo/ISO-Downloader'">Télécharger</button>
+                </div>
+            </div>
+            <button class="arrow right" onclick="scrollCarousel(1)">❯</button>
+            <button class="close-btn" onclick="closeOverlay()">✖ Fermer</button><input type="text" id="searchBar" placeholder="Rechercher une application..." />
+        </div>
+    </div>
+    <!-- Editeur de code -->
+    <div id="editorContainer">
+    </div>
+
+    <!-- Resultat de recherche ici ! -->
+    <div class="item">Batchscaner Antivirus</div>
+    <div class="item">OBS studio</div>
+    <div class="item">Virtualbox</div>
+    <div class="item">FireFox</div>
+    <div class="item">Visual Studio</div>
+
+    <script>
+        const input = document.getElementById("searchInput");
+        const items = document.querySelectorAll(".item");
+
+        input.addEventListener("input", function () {
+            const filter = input.value.toLowerCase();
+
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (filter && text.includes(filter)) {
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        });
+
+        function toggleMenu() {
+            document.getElementById("menu").classList.toggle("open");
+        }
+
+        function openOverlay() {
+            document.getElementById("shopOverlay").style.display = "flex";
+        }
+
+        function closeOverlay() {
+            document.getElementById("shopOverlay").style.display = "none";
+        }
+
+        let scrollAmount = 0;
+        const carousel = document.getElementById("carousel");
+
+        function scrollCarousel(direction) {
+            const cardWidth = 270;
+            scrollAmount += direction * cardWidth;
+            carousel.style.transform = `translateX(-${scrollAmount}px)`;
+        }
+
+        function openModal() {
+            document.getElementById("loginModal").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("loginModal").style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            const modal = document.getElementById("loginModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function ouvrirEditeur() {
+            document.getElementById("editorContainer").style.display = "block";
+        }
+
+        function fermerEditeur() {
+            document.getElementById("editorContainer").style.display = "none";
+        }
+
+
+        const mods = [
+            { name: "Edieur de code", description: "Tu as besoin d'aide alors tu es au bon endroit", image: "IMG\\Model\\mod1.png" },
+            { name: "Mode et jeux", description: "Installes des modes de jeux", image: "IMG\\Model\\exe.png" },
+            { name: "Securité", description: "Utilise les outils de sécurité", image: "IMG\\Model\\exe.png" },
+            { name: "Applications", description: "Install des application via notre store.", image: "IMG\\Model\\exe.png" },
+            { name: "Tuto & Vidéo", description: "Regarde des tutoriels et fais tes vidéos", image: "IMG\\Model\\video.png" },
+            { name: "Projet", description: "Créer imagine et publie", image: "IMG\\Model\\img.png" },
+            { name: "Logiciels", description: "Cherche ce dont tu as besoin !", image: "mod7.png" },
+        ];
+
+        const track = document.getElementById("carouselTrack");
+
+        for (let i = 0; i < 3; i++) {
+            mods.forEach((mod, index) => {
+                const card = document.createElement("div");
+                card.className = "mod-card";
+                card.style.animationDelay = `${index * 0.5}s`;
+                card.innerHTML = `
+                                                                          <img src="${mod.image}" alt="${mod.name}">
+                                                                          <h3>${mod.name}</h3>
+                                                                          <p>${mod.description}</p>
+                                                                        `;
+                track.appendChild(card);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const blocks = document.querySelectorAll(".info-block");
+            blocks.forEach((block, index) => {
+                setTimeout(() => {
+                    block.style.opacity = 1;
+                    block.style.transform = "translateY(0)";
+                }, index * 300);
+            });
+        });
+
+        const video = document.getElementById("localVideo");
+        const playButton = document.getElementById("customPlay");
+
+        playButton.addEventListener("click", () => {
+            video.play();
+            playButton.style.display = "none";
+        });
+
+        video.addEventListener("pause", () => {
+            playButton.style.display = "block";
+        });
+
+        video.addEventListener("ended", () => {
+            playButton.style.display = "block";
+        });
+
+        const searchInput = document.getElementById('searchBar');
+        const cards = document.querySelectorAll('.card');
+
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+
+            cards.forEach(card => {
+                const appName = card.textContent.toLowerCase();
+                if (appName.includes(query)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+
+    </script>
+
+    <div class="section invisible">
+        <div class="iso-cardinvisible">
+            <span></span>
+        </div>
+    </div>
+
+    <div class="section white">
+        <div class="iso-card">
+            <h2 class="textcolorblack">Windows 10 x64 & x32</h2>
+            <p class="textcolorblack">Version complète, Windows 10</p>
+            <a class="neonbutton" style="position: relative; top: 10px;" href="https://drive.google.com/file/d/1swtNWzSBeenMHXxpL2ApEl2itJIVK6hr/view?usp=sharing" target="_blank">Télécharger</a>
+        </div>
+    </div>
+
+    <div class="section blue">
+        <div class="iso-card">
+            <h2 class="textcolorblack">Win8.1_English_x64.iso</h2>
+            <p class="textcolorblack">Édition 64 bits, multiple edition.</p>
+            <a class="neonbutton" style="position: relative; top: 10px;" href="https://drive.google.com/file/d/14tpP3Y9j0FOweF8Vcq4VMfqYLDeSlV-J/view?usp=sharing" target="_blank">Télécharger</a>
+        </div>
+    </div>
+
+    <div class="section white">
+        <div class="iso-card">
+            <h2 class="textcolorblack">Windows 7</h2>
+            <p class="textcolorblack">Édition 64 bits, multiple edition.</p>
+            <a class="download-btn">Pas disponnible</a>
+        </div>
+    </div>
+
+
+    <div class="section blackgrey">
+        <footer class="social-footer">
+            <h3>SUIVRE SUBVISION</h3>
+            <div class="social-icons">
+                <a href="https://www.youtube.com/channel/UC7je6Zgpz2JA7qlX0JzJUdg" target="_blank" title="YouTube"><img src="IMG\LINK\youtube.png" alt="YouTube"></a>
+                <a href="https://facebook.com" target="_blank" title="Facebook"><img src="IMG\LINK\facebook.png" alt="Facebook"></a>
+                <a href="https://www.tiktok.com/@subvisionkenzo" target="_blank" title="TikTok"><img src="IMG\LINK\tiktok.png" alt="TikTok"></a>
+                <a href="https://whatsapp.com" target="_blank" title="WhatsApp"><img src="IMG\LINK\whatsapp.png" alt="WhatsApp"></a>
+                <a href="https://discord.gg/J3z2djUaJ6" target="_blank" title="Discord"><img src="IMG\LINK\discord.png" alt="Discord"></a>
+            </div>
+        </footer>
+    </div>
+
+</body>
+</html>
