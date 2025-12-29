@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio App</title>
+
+    <style>
+        :root {
+            --bg: #0e1016;
+            --panel: #171a23;
+            --panel2: #1f2330;
+            --accent: #6c5ce7;
+            --text: #eaeaf0;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter,Arial,sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ===== HAMBURGER ===== */
+        #topbar {
+            height: 50px;
+            background: var(--panel);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+        }
+
+        #burger {
+            font-size: 26px;
+            cursor: pointer;
+        }
+
+        /* ===== MENU ===== */
+        #menu {
+            position: fixed;
+            top: 0;
+            left: -220px;
+            width: 220px;
+            height: 100%;
+            background: var(--panel2);
+            padding: 20px;
+            transition: .3s;
+        }
+
+            #menu.open {
+                left: 0
+            }
+
+        .menu-item {
+            margin: 15px 0;
+            cursor: pointer;
+        }
+
+        /* ===== PAGES ===== */
+        .page {
+            display: none;
+        }
+
+            .page.active {
+                display: block;
+            }
+
+        /* ===== HOME ===== */
+        #homePage {
+            padding: 50px;
+            text-align: center;
+            opacity: .6;
+        }
+
+        /* ===== EDITOR ===== */
+        #editorPage {
+            padding: 20px;
+        }
+
+        /* ===== TOP ===== */
+        #editorTop {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* ===== VISUALIZER ===== */
+        #visualizer {
+            width: 500px;
+            height: 300px;
+            background: #0b0d12;
+            border-radius: 12px;
+        }
+
+        /* ===== CONTROLS ===== */
+        #controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 14px 22px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        #importBtn {
+            background: linear-gradient(135deg,#6c5ce7,#a29bfe);
+        }
+
+        /* ===== FILES ===== */
+        #filesBox {
+            background: var(--panel);
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 12px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .file {
+            background: var(--panel2);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: grab;
+            white-space: nowrap;
+        }
+
+        /* ===== TIMELINE ===== */
+        #timelineWrapper {
+            position: relative;
+        }
+
+        #timeRuler {
+            height: 30px;
+            background: #10131a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tick {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            border-left: 1px solid #444;
+            font-size: 11px;
+            padding-left: 2px;
+        }
+
+        #timeline {
+            background: #12141c;
+            border-radius: 12px;
+            height: 200px;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .track {
+            height: 80px;
+            border-bottom: 1px solid #222;
+            position: relative;
+        }
+
+        .block {
+            position: absolute;
+            top: 10px;
+            height: 60px;
+            border-radius: 10px;
+            padding: 6px;
+            color: #000;
+            cursor: grab;
+        }
+
+            .block canvas {
+                width: 100%;
+                height: 30px;
+            }
+
+        .delete {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: red;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== TOP BAR ===== -->
+    <div id="topbar">
+        <div id="burger">☰</div>
+    </div>
+
+    <!-- ===== MENU ===== -->
+    <div id="menu">
+        <div class="menu-item" onclick="openEditor()">🎧 Éditeur audio</div>
+    </div>
+
+    <!-- ===== HOME ===== -->
+    <div id="homePage" class="page active">
+        <h1>Bienvenue</h1>
+        <p>Ouvre le menu ☰ pour accéder à l’éditeur audio</p>
+    </div>
+
+    <!-- ===== EDITOR ===== -->
+    <div id="editorPage" class="page">
+
+        <div id="editorTop">
+            <canvas id="visualizer"></canvas>
+
+            <div id="controls">
+                <label>
+                    <input type="file" id="fileInput" accept="audio/*" multiple hidden>
+                    <button id="importBtn">📂 Importer audio</button>
+                </label>
+                <button onclick="play()">▶ Play</button>
+                <button onclick="stop()">■ Stop</button>
+            </div>
+        </div>
+
+        <div id="filesBox"></div>
+
+        <div id="timelineWrapper">
+            <div id="timeRuler"></div>
+            <div id="timeline">
+                <div id="playhead"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ===== MENU ===== */
+        const menu = document.getElementById("menu");
+        burger.onclick = () => menu.classList.toggle("open");
+
+        function openEditor() {
+            menu.classList.remove("open");
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            editorPage.classList.add("active");
+        }
+
+        /* ===== AUDIO ===== */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        document.body.onclick = () => audioCtx.resume();
+
+        const master = audioCtx.createGain();
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        master.connect(analyser);
+        analyser.connect(audioCtx.destination);
+
+        /* ===== DATA ===== */
+        const filesBox = document.getElementById("filesBox");
+        const timeline = document.getElementById("timeline");
+        const playhead = document.getElementById("playhead");
+        const ruler = document.getElementById("timeRuler");
+
+        let items = [];
+        let playing = false;
+        let startTime = 0;
+
+        /* ===== RULER ===== */
+        function drawRuler(seconds = 60) {
+            ruler.innerHTML = "";
+            for (let i = 0; i <= seconds; i++) {
+                const t = document.createElement("div");
+                t.className = "tick";
+                t.style.left = i * 100 + "px";
+                t.textContent = i + "s";
+                ruler.appendChild(t);
+            }
+        }
+        drawRuler();
+
+        /* ===== IMPORT ===== */
+        importBtn.onclick = () => fileInput.click();
+        fileInput.onchange = async e => {
+            for (const file of e.target.files) {
+                const buffer = await audioCtx.decodeAudioData(await file.arrayBuffer());
+                addFile(file.name, buffer);
+            }
+        };
+
+        function addFile(name, buffer) {
+            const color = `hsl(${Math.random() * 360},80%,65%)`;
+            const div = document.createElement("div");
+            div.className = "file";
+            div.textContent = name;
+            div.draggable = true;
+
+            const item = { name, buffer, color };
+            items.push(item);
+
+            div.ondragstart = e => e.dataTransfer.setData("id", items.indexOf(item));
+            filesBox.appendChild(div);
+        }
+
+        /* ===== DROP ===== */
+        timeline.ondragover = e => e.preventDefault();
+        timeline.ondrop = e => {
+            const item = items[e.dataTransfer.getData("id")];
+            createBlock(item, e.offsetX);
+        };
+
+        /* ===== BLOCK ===== */
+        function createBlock(item, x) {
+            const track = document.createElement("div");
+            track.className = "track";
+
+            const block = document.createElement("div");
+            block.className = "block";
+            block.style.left = x + "px";
+            block.style.width = item.buffer.duration * 100 + "px";
+            block.style.background = item.color;
+            block.innerHTML = `<span class="delete">✕</span>${item.name}`;
+
+            const c = document.createElement("canvas");
+            block.appendChild(c);
+            drawWave(c);
+
+            block.querySelector(".delete").onclick = () => track.remove();
+
+            let offset;
+            block.onmousedown = e => {
+                offset = e.offsetX;
+                document.onmousemove = ev => {
+                    block.style.left = (ev.pageX - timeline.offsetLeft - offset) + "px";
+                };
+                document.onmouseup = () => document.onmousemove = null;
+            };
+
+            track.appendChild(block);
+            timeline.appendChild(track);
+            item.block = block;
+        }
+
+        /* ===== FAKE WAVE ===== */
+        function drawWave(c) {
+            const ctx = c.getContext("2d");
+            c.width = c.offsetWidth;
+            c.height = 30;
+            for (let i = 0; i < c.width; i += 4) {
+                const h = Math.random() * c.height;
+                ctx.fillRect(i, (c.height - h) / 2, 2, h);
+            }
+        }
+
+        /* ===== PLAY ===== */
+        function play() {
+            if (playing) return;
+            playing = true;
+            startTime = audioCtx.currentTime;
+
+            items.forEach(i => {
+                if (!i.block) return;
+                const src = audioCtx.createBufferSource();
+                src.buffer = i.buffer;
+                src.connect(master);
+                src.start(audioCtx.currentTime + parseInt(i.block.style.left) / 100);
+                i.src = src;
+            });
+            animate();
+        }
+
+        function stop() {
+            playing = false;
+            playhead.style.left = "0px";
+            items.forEach(i => i.src && i.src.stop());
+        }
+
+        /* ===== VISUALIZER ===== */
+        const canvas = document.getElementById("visualizer");
+        const ctx = canvas.getContext("2d");
+        canvas.width = 500;
+        canvas.height = 300;
+        const data = new Uint8Array(analyser.frequencyBinCount);
+
+        function animate() {
+            if (!playing) return;
+            playhead.style.left = (audioCtx.currentTime - startTime) * 100 + "px";
+
+            analyser.getByteFrequencyData(data);
+            ctx.fillStyle = "#0b0d12";
+            ctx.fillRect(0, 0, 500, 300);
+
+            const bw = 500 / data.length;
+            data.forEach((v, i) => {
+                ctx.fillStyle = `hsl(${i / data.length * 360},80%,60%)`;
+                ctx.fillRect(i * bw, 300 - v, bw - 1, v);
+            });
+
+            requestAnimationFrame(animate);
+        }
+    </script>
+
+</body>
+</html>

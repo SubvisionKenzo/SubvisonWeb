@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Subvision Studio Local</title>
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            height: 100vh;
+        }
+
+        #sidebar {
+            width: 250px;
+            background: #222;
+            padding: 20px;
+            border-right: 2px solid #00ffff;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        canvas {
+            background: black;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px;
+            margin: 5px;
+            background: #00ffff;
+            border: none;
+            border-radius: 5px;
+            color: #111;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        #timeline {
+            background: #333;
+            flex: 1;
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .block {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #timeDisplay {
+            font-size: 16px;
+            margin-left: auto;
+            color: #00ffff;
+        }
+
+        #customImport {
+            background: #ffcc00;
+            color: #111;
+            font-weight: bold;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+            #customImport:hover {
+                background: #ffdd33;
+            }
+
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div id="customImport">📥 Importer un fichier audio</div>
+        <input type="file" id="fileInput" accept="audio/*">
+        <button id="startRec">🎙️ Enregistrer</button>
+        <button id="stopRec" disabled>🛑 Terminer</button>
+    </div>
+
+    <div id="main">
+        <canvas width="800" height="200"></canvas>
+
+        <div id="controls">
+            <button id="playBtn">▶️ Play</button>
+            <button id="stopBtn">⏹️ Stop</button>
+            <button id="restartBtn">🔁 Reprendre</button>
+            <div id="timeDisplay">00:00.000</div>
+        </div>
+
+        <div id="timeline">Ajoutez des blocs audio ici pour créer votre mix</div>
+    </div>
+
+    <script>
+        const canvas = document.querySelector("canvas");
+        const ctx = canvas.getContext("2d");
+        const fileInput = document.getElementById("fileInput");
+        const customImport = document.getElementById("customImport");
+        const timeline = document.getElementById("timeline");
+        const timeDisplay = document.getElementById("timeDisplay");
+
+        const playBtn = document.getElementById("playBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const restartBtn = document.getElementById("restartBtn");
+
+        const startRec = document.getElementById("startRec");
+        const stopRec = document.getElementById("stopRec");
+
+        let audioCtx = new AudioContext();
+        let source;
+        let analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
+        let dataArray = new Uint8Array(analyser.frequencyBinCount);
+        let buffer;
+        let startTime = 0;
+        let playing = false;
+
+        customImport.onclick = () => fileInput.click();
+
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (ev) {
+                audioCtx.decodeAudioData(ev.target.result, (decoded) => {
+                    buffer = decoded;
+                    addBlock(file.name);
+                });
+            };
+
+            reader.readAsArrayBuffer(file);
+        };
+
+        function playAudio() {
+            if (buffer) {
+                source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                source.start();
+                startTime = audioCtx.currentTime;
+                playing = true;
+                drawWaveform();
+            }
+        }
+
+        function stopAudio() {
+            if (source) {
+                source.stop();
+                playing = false;
+                timeDisplay.textContent = "00:00.000";
+            }
+        }
+
+        function restartAudio() {
+            stopAudio();
+            playAudio();
+        }
+
+        playBtn.onclick = playAudio;
+        stopBtn.onclick = stopAudio;
+        restartBtn.onclick = restartAudio;
+
+        function drawWaveform() {
+            if (!playing) return;
+            requestAnimationFrame(drawWaveform);
+            analyser.getByteTimeDomainData(dataArray);
+
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#ffcc00";
+            ctx.beginPath();
+
+            let sliceWidth = canvas.width / dataArray.length;
+            let x = 0;
+
+            for (let i = 0; i < dataArray.length; i++) {
+                let v = dataArray[i] / 128.0;
+                let y = v * canvas.height / 2;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+
+                x += sliceWidth;
+            }
+
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+
+            const elapsed = audioCtx.currentTime - startTime;
+            timeDisplay.textContent = formatTime(elapsed);
+        }
+
+        function formatTime(t) {
+            const min = Math.floor(t / 60).toString().padStart(2, '0');
+            const sec = Math.floor(t % 60).toString().padStart(2, '0');
+            const ms = Math.floor((t % 1) * 1000).toString().padStart(3, '0');
+            return `${min}:${sec}.${ms}`;
+        }
+
+        function addBlock(name) {
+            const block = document.createElement("div");
+            block.className = "block";
+            block.textContent = name;
+            block.style.background = getRandomColor();
+
+            block.oncontextmenu = (e) => {
+                e.preventDefault();
+                if (confirm("Supprimer ce bloc ?")) {
+                    block.remove();
+                }
+            };
+
+            timeline.appendChild(block);
+        }
+
+        function getRandomColor() {
+            const colors = ['#ff4444', '#00ffff', '#ffcc00', '#44ff44', '#ff66ff'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // 🎙️ Enregistrement vocal
+        let mediaRecorder;
+        let audioChunks = [];
+
+        startRec.onclick = async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    audioCtx.decodeAudioData(ev.target.result, (decoded) => {
+                        buffer = decoded;
+                        addBlock("🎙️ Enregistrement vocal");
+                        playAudio();
+                    });
+                };
+                reader.readAsArrayBuffer(audioBlob);
+            };
+
+            mediaRecorder.start();
+            startRec.disabled = true;
+            stopRec.disabled = false;
+        };
+
+        stopRec.onclick = () => {
+            mediaRecorder.stop();
+            startRec.disabled = false;
+            stopRec.disabled = true;
+        };
+    </script>
+
+</body>
+</html>

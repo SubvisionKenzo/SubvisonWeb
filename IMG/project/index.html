@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>SubvisionIA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <img src="avatar.png" id="avatar" alt="IA Avatar">
+            <h2 id="welcome">Bienvenue !</h2>
+        </div>
+        <div id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Écris ton message ici...">
+        <button onclick="sendMessage()">Envoyer</button>
+        <br><br>
+        <input type="file" id="image-upload" accept="image/*">
+        <canvas id="canvas" width="300" height="300"></canvas>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
